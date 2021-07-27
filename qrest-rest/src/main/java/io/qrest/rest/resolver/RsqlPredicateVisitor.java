@@ -15,51 +15,84 @@
  */
 package io.qrest.rest.resolver;
 
+import static cz.jirutka.rsql.parser.ast.LogicalOperator.AND;
+import static org.apache.commons.lang3.StringUtils.repeat;
+
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.SimpleExpression;
 
 import cz.jirutka.rsql.parser.ast.AndNode;
 import cz.jirutka.rsql.parser.ast.ComparisonNode;
+import cz.jirutka.rsql.parser.ast.LogicalNode;
+import cz.jirutka.rsql.parser.ast.Node;
 import cz.jirutka.rsql.parser.ast.OrNode;
 import cz.jirutka.rsql.parser.ast.RSQLVisitor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class RsqlPredicateVisitor implements RSQLVisitor<Predicate, Void> {
 
-	private boolean andOperator;
-	private final BooleanBuilder booleanBuilder = new BooleanBuilder();
 	private final PathResolver pathResolver;
+	private final BooleanBuilder builder = new BooleanBuilder();
+	private int depth;
 
 	@Override
-	public Predicate visit(AndNode node, Void param) {
-		andOperator = true;
-		return booleanBuilder;
+	public Predicate visit(@NonNull AndNode node, Void param) {
+		return visit(node);
 	}
 
 	@Override
-	public Predicate visit(OrNode node, Void param) {
-		andOperator = false;
-		return booleanBuilder;
+	public Predicate visit(@NonNull OrNode node, Void param) {
+		return visit(node);
 	}
 
 	@Override
-	public Predicate visit(ComparisonNode node, Void params) {
-		Path<?> path = pathResolver.getPath(node.getSelector());
-		Predicate predicate = null;
-		if (path instanceof SimpleExpression<?>) {
-			predicate = ((SimpleExpression<Object>) path).eq(node.getArguments().get(0));
+	public Predicate visit(@NonNull ComparisonNode node, Void params) {
+		return visit(node);
+	}
+
+	private Predicate visit(Node root) {
+		walk(root, true);
+		return builder;
+	}
+
+	private void walk(Node node, boolean thisAndOperation) {
+		if (log.isDebugEnabled()) {
+			depth++;
+			log.debug(repeat('-', depth) + " " + node.getClass().getSimpleName() + ":" + node.toString());
 		}
-		if (predicate != null) {
-			if (andOperator) {
-				booleanBuilder.and(predicate);
-			} else {
-				booleanBuilder.or(predicate);
+		if (node instanceof LogicalNode) {
+			boolean lowerAndOperation = ((LogicalNode) node).getOperator().equals(AND);
+			for (Node child : ((LogicalNode) node).getChildren()) {
+				walk(child, lowerAndOperation);
 			}
+		} else if (node instanceof ComparisonNode) {
+			BooleanExpression nextExpression = comparisonExpression((ComparisonNode) node);
+			if (thisAndOperation) {
+				builder.and(nextExpression);
+			} else {
+				builder.or(nextExpression);
+			}
+		} else {
+			throw new IllegalArgumentException("node is of unknown class: " + node.getClass().getName());
 		}
-		return booleanBuilder;
+		if (log.isDebugEnabled()) {
+			depth--;
+		}
+	}
+
+	private BooleanExpression comparisonExpression(ComparisonNode node) {
+		Path<?> path = pathResolver.getPath(node.getSelector());
+		if (path instanceof SimpleExpression<?>) {
+			return ((SimpleExpression<Object>) path).eq(node.getArguments().get(0));
+		}
+		throw new IllegalArgumentException("not a SimpleExpression");
 	}
 
 }
