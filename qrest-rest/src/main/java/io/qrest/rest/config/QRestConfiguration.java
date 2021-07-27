@@ -42,5 +42,4 @@ public class QRestConfiguration implements WebMvcConfigurer {
 		argumentResolvers.add(new QueryDslParamResolver(booleanExpressionFactory));
 		log.info("Registered {} as argument resolver.", QueryDslParamResolver.class.getName());
 	}
-
 }

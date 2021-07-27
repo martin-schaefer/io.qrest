@@ -16,6 +16,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class BooleanExpressionFactory {
 
+	private static final String EQ = "==";
+	private static final String NEQ = "!=";
+	private static final String IN = "=in=";
+	private static final String OUT = "=out=";
+	private static final String NULL = "null";
 	private final ConversionService conversionService;
 
 	public BooleanExpression create(Path<?> path, ComparisonOperator op, List<String> args) {
@@ -24,21 +29,28 @@ public class BooleanExpressionFactory {
 			arg = args.get(0);
 		}
 		if (path instanceof SimpleExpression<?>) {
-			if (isOp(op, "==")) {
-				return ((SimpleExpression<Object>) path).eq(convert(arg, path));
-			}
-			if (isOp(op, "!=")) {
-				return ((SimpleExpression<Object>) path).ne(convert(arg, path));
-			}
-			if (isOp(op, "=in=")) {
-				return ((SimpleExpression<Object>) path).in(convert(args, path));
-			}
-			if (isOp(op, "=out=")) {
-				return ((SimpleExpression<Object>) path).notIn(convert(args, path));
+			SimpleExpression<Object> se = (SimpleExpression<Object>) path;
+			switch (op.getSymbol()) {
+			case EQ:
+				if (NULL.equals(arg)) {
+					return se.isNull();
+				} else {
+					return se.eq(convert(arg, path));
+				}
+			case NEQ:
+				if (NULL.equals(arg)) {
+					return se.isNotNull();
+				} else {
+					return se.ne(convert(arg, path));
+				}
+			case IN:
+				return se.in(convert(args, path));
+			case OUT:
+				return se.notIn(convert(args, path));
 			}
 		}
-		throw new IllegalArgumentException(
-				"Path of class " + path.getClass().getSimpleName() + " cannot be used with operator " + op.getSymbol());
+		throw new IllegalArgumentException("A property of type " + path.getClass().getSimpleName()
+				+ " cannot be queried with operator " + op.getSymbol());
 	}
 
 	private Object convert(String source, Path<?> path) {

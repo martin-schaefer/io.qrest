@@ -18,6 +18,7 @@ package io.qrest.rest.resolver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,7 +33,9 @@ import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 
 import cz.jirutka.rsql.parser.RSQLParser;
+import cz.jirutka.rsql.parser.ast.ComparisonOperator;
 import cz.jirutka.rsql.parser.ast.Node;
+import cz.jirutka.rsql.parser.ast.RSQLOperators;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -77,7 +80,9 @@ public class QueryDslParamResolver implements HandlerMethodArgumentResolver {
 		if (StringUtils.isBlank(where)) {
 			return Optional.empty();
 		}
-		Node rootNode = new RSQLParser().parse(where);
+		Set<ComparisonOperator> operators = RSQLOperators.defaultOperators();
+		operators.add(new ComparisonOperator("=lk=", false));
+		Node rootNode = new RSQLParser(operators).parse(where);
 		Predicate predicate = rootNode.accept(new RsqlPredicateVisitor(pathResolver, booleanExpressionFactory));
 		return Optional.of(predicate);
 	}
