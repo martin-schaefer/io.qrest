@@ -22,7 +22,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.SimpleExpression;
 
 import cz.jirutka.rsql.parser.ast.AndNode;
 import cz.jirutka.rsql.parser.ast.ComparisonNode;
@@ -38,7 +37,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RsqlPredicateVisitor implements RSQLVisitor<Predicate, Void> {
 
+	@NonNull
 	private final PathResolver pathResolver;
+	@NonNull
+	private final BooleanExpressionFactory booleanExpressionFactory;
 	private final BooleanBuilder builder = new BooleanBuilder();
 	private int depth;
 
@@ -73,7 +75,7 @@ public class RsqlPredicateVisitor implements RSQLVisitor<Predicate, Void> {
 				walk(child, lowerAndOperation);
 			}
 		} else if (node instanceof ComparisonNode) {
-			BooleanExpression nextExpression = comparisonExpression((ComparisonNode) node);
+			BooleanExpression nextExpression = expression((ComparisonNode) node);
 			if (thisAndOperation) {
 				builder.and(nextExpression);
 			} else {
@@ -87,12 +89,9 @@ public class RsqlPredicateVisitor implements RSQLVisitor<Predicate, Void> {
 		}
 	}
 
-	private BooleanExpression comparisonExpression(ComparisonNode node) {
+	private BooleanExpression expression(ComparisonNode node) {
 		Path<?> path = pathResolver.getPath(node.getSelector());
-		if (path instanceof SimpleExpression<?>) {
-			return ((SimpleExpression<Object>) path).eq(node.getArguments().get(0));
-		}
-		throw new IllegalArgumentException("not a SimpleExpression");
+		return booleanExpressionFactory.create(path, node.getOperator(), node.getArguments());
 	}
 
 }

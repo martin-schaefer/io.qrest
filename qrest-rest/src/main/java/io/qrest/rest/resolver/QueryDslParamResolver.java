@@ -33,8 +33,14 @@ import com.querydsl.core.types.Predicate;
 
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class QueryDslParamResolver implements HandlerMethodArgumentResolver {
+
+	@NonNull
+	private final BooleanExpressionFactory booleanExpressionFactory;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
@@ -72,7 +78,7 @@ public class QueryDslParamResolver implements HandlerMethodArgumentResolver {
 			return Optional.empty();
 		}
 		Node rootNode = new RSQLParser().parse(where);
-		Predicate predicate = rootNode.accept(new RsqlPredicateVisitor(pathResolver));
+		Predicate predicate = rootNode.accept(new RsqlPredicateVisitor(pathResolver, booleanExpressionFactory));
 		return Optional.of(predicate);
 	}
 }

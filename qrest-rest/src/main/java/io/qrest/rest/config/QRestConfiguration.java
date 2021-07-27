@@ -18,19 +18,29 @@ package io.qrest.rest.config;
 import java.util.List;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import io.qrest.rest.resolver.BooleanExpressionFactory;
 import io.qrest.rest.resolver.QueryDslParamResolver;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration
+@RequiredArgsConstructor
 @Slf4j
 public class QRestConfiguration implements WebMvcConfigurer {
 
+	@NonNull
+	private final ConversionService conversionService;
+
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-		argumentResolvers.add(new QueryDslParamResolver());
+		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
+		argumentResolvers.add(new QueryDslParamResolver(booleanExpressionFactory));
 		log.info("Registered {} as argument resolver.", QueryDslParamResolver.class.getName());
 	}
+
 }
