@@ -92,7 +92,7 @@ public class RsqlPredicateVisitor implements RSQLVisitor<Predicate, Void> {
 
 	private BooleanExpression expression(ComparisonNode node) {
 		Path<?> path = pathResolver.getPath(node.getSelector());
-		return booleanExpressionFactory.create(path, node.getOperator(), node.getArguments());
+		return booleanExpressionFactory.create(path, node.getOperator().getSymbol(), node.getArguments());
 	}
 
 }

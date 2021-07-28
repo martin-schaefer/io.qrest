@@ -23,14 +23,12 @@ public class BooleanExpressionFactory {
 	private static final String NULL = "null";
 	private final ConversionService conversionService;
 
-	public BooleanExpression create(Path<?> path, ComparisonOperator op, List<String> args) {
-		String arg = null;
-		if (!op.isMultiValue()) {
-			arg = args.get(0);
-		}
+	public BooleanExpression create(Path<?> path, String operatorSymbol, List<String> args) {
+		// one value is guaranteed
+		String arg = args.get(0);
 		if (path instanceof SimpleExpression<?>) {
 			SimpleExpression<Object> se = (SimpleExpression<Object>) path;
-			switch (op.getSymbol()) {
+			switch (operatorSymbol) {
 			case EQ:
 				if (NULL.equals(arg)) {
 					return se.isNull();
@@ -50,7 +48,7 @@ public class BooleanExpressionFactory {
 			}
 		}
 		throw new IllegalArgumentException("A property of type " + path.getClass().getSimpleName()
-				+ " cannot be queried with operator " + op.getSymbol());
+				+ " cannot be queried with operator " + operatorSymbol);
 	}
 
 	private Object convert(String source, Path<?> path) {

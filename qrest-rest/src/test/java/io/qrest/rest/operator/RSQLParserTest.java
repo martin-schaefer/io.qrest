@@ -20,7 +20,7 @@ public class RSQLParserTest {
 	private static final ComparisonOperatorProvider comparisonOperatorProvider = new QRestComparisonOperatorProvider();
 
 	@ParameterizedTest
-	@MethodSource("provideExpressions")
+	@MethodSource("expressionSource")
 	public void simpleExpressionShouldParse(String expression, String expectedSymbol) {
 		// given: provided parameters
 
@@ -31,7 +31,7 @@ public class RSQLParserTest {
 		assertThat(((ComparisonNode) node).getOperator().getSymbols()).contains(expectedSymbol);
 	}
 
-	private static Stream<Arguments> provideExpressions() {
+	private static Stream<Arguments> expressionSource() {
 		return comparisonOperatorProvider.getComparisonOperators().stream()
 				.flatMap(o -> Arrays.stream(o.getSymbols()).map(s -> Arguments.of(FIELD + s + VALUE, s)));
 
