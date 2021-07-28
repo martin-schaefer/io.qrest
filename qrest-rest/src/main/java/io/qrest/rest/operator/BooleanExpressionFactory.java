@@ -1,4 +1,4 @@
-package io.qrest.rest.resolver;
+package io.qrest.rest.operator;
 
 import java.util.ArrayList;
 import java.util.Collection;

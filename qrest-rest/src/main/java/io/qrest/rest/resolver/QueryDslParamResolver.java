@@ -36,6 +36,8 @@ import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.ComparisonOperator;
 import cz.jirutka.rsql.parser.ast.Node;
 import cz.jirutka.rsql.parser.ast.RSQLOperators;
+import io.qrest.rest.operator.BooleanExpressionFactory;
+import io.qrest.rest.operator.ComparisonOperatorProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +46,9 @@ public class QueryDslParamResolver implements HandlerMethodArgumentResolver {
 
 	@NonNull
 	private final BooleanExpressionFactory booleanExpressionFactory;
+
+	@NonNull
+	private final ComparisonOperatorProvider comparisonOperatorProvider;
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
@@ -82,7 +87,7 @@ public class QueryDslParamResolver implements HandlerMethodArgumentResolver {
 		}
 		Set<ComparisonOperator> operators = RSQLOperators.defaultOperators();
 		operators.add(new ComparisonOperator("=lk=", false));
-		Node rootNode = new RSQLParser(operators).parse(where);
+		Node rootNode = new RSQLParser(comparisonOperatorProvider.getComparisonOperators()).parse(where);
 		Predicate predicate = rootNode.accept(new RsqlPredicateVisitor(pathResolver, booleanExpressionFactory));
 		return Optional.of(predicate);
 	}

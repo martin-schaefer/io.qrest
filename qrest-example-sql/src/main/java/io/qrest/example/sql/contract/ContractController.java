@@ -33,12 +33,7 @@ public class ContractController {
 
 	@GetMapping("/contracts")
 	public List<QueryEntity> getContracts(@QueryDslParamSpec(ContractPathResolver.class) QueryDslParam queryDslParam) {
-		try {
-			return contractRepository.find(queryDslParam);
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw e;
-		}
+		return contractRepository.find(queryDslParam);
 	}
 
 }
