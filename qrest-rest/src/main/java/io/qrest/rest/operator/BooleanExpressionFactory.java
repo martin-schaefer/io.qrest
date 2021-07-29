@@ -1,7 +1,11 @@
 package io.qrest.rest.operator;
 
 import static io.qrest.rest.operator.OperatorSymbols.EQUAL;
+import static io.qrest.rest.operator.OperatorSymbols.GREATER_THAN;
+import static io.qrest.rest.operator.OperatorSymbols.GREATER_THAN_OR_EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.IN;
+import static io.qrest.rest.operator.OperatorSymbols.LESS_THAN;
+import static io.qrest.rest.operator.OperatorSymbols.LESS_THAN_OR_EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.LIKE;
 import static io.qrest.rest.operator.OperatorSymbols.LIKE_CASE_INSENSITIVE;
 import static io.qrest.rest.operator.OperatorSymbols.NOT_EQUAL;
@@ -17,10 +21,10 @@ import org.springframework.core.convert.ConversionService;
 
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.SimpleExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 
-import cz.jirutka.rsql.parser.ast.ComparisonOperator;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -38,6 +42,18 @@ public class BooleanExpressionFactory {
 				return se.like(replace(arg, "*", "%"));
 			case LIKE_CASE_INSENSITIVE:
 				return se.likeIgnoreCase(replace(arg, "*", "%"));
+			}
+		} else if (path instanceof NumberExpression) {
+			NumberExpression ne = (NumberExpression) path;
+			switch (operatorSymbol) {
+			case GREATER_THAN:
+				return ne.gt((Number) convert(arg, path));
+			case GREATER_THAN_OR_EQUAL:
+				return ne.goe((Number) convert(arg, path));
+			case LESS_THAN:
+				return ne.lt((Number) convert(arg, path));
+			case LESS_THAN_OR_EQUAL:
+				return ne.loe((Number) convert(arg, path));
 			}
 		}
 		if (path instanceof SimpleExpression<?>) {
@@ -70,7 +86,7 @@ public class BooleanExpressionFactory {
 			// no conversion required
 			return source;
 		}
-		return conversionService.convert(conversionService, path.getType());
+		return conversionService.convert(source, path.getType());
 	}
 
 	private Collection<?> convert(Collection<String> sourceCollection, Path<?> path) {
@@ -85,7 +101,4 @@ public class BooleanExpressionFactory {
 		return convertedList;
 	}
 
-	private boolean isOp(ComparisonOperator op, String primarySymbol) {
-		return (op.getSymbol().equals(primarySymbol));
-	}
 }
