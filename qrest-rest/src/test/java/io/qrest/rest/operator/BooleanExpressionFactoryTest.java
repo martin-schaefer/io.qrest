@@ -24,6 +24,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -244,7 +246,15 @@ public class BooleanExpressionFactoryTest {
 		}, (BiConsumer<NumberPath<BigDecimal>, List<BigDecimal>>) (m, p) -> {
 			then(m).should(times(2 * p.size() + 1)).getType();
 			then(m).should().in((p));
-		}));
+		}),
+				Arguments.of(NOT_IN, (Function<List<BigDecimal>, NumberPath<?>>) (p) -> {
+					NumberPath<BigDecimal> mock = numberPath(BigDecimal.class);
+					given(mock.notIn(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<NumberPath<BigDecimal>, List<BigDecimal>>) (m, p) -> {
+					then(m).should(times(2 * p.size() + 1)).getType();
+					then(m).should().notIn((p));
+				}));
 	}
 
 	private static StringPath stringPath(boolean withType) {
@@ -271,4 +281,8 @@ public class BooleanExpressionFactoryTest {
 		return booleanPath;
 	}
 
+	@Test
+	public void constructorWithNull_shouldThrowNullPointerException() {
+		Assertions.assertThrows(NullPointerException.class, () -> new BooleanExpressionFactory(null));
+	}
 }

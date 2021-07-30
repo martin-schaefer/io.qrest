@@ -25,11 +25,13 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.SimpleExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class BooleanExpressionFactory {
 
+	@NonNull
 	private final ConversionService conversionService;
 
 	public BooleanExpression create(Path<?> path, String operatorSymbol, List<String> args) {
