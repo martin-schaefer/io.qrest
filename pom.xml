@@ -16,6 +16,7 @@
 	<properties>
 		<revision>0.0.1-SNAPSHOT</revision>
 		<java.version>11</java.version>
+		<querydsl5.version>5.0.0</querydsl5.version>
 	</properties>
 	<dependencies>
 		<dependency>

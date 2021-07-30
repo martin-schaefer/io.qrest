@@ -25,8 +25,8 @@ import com.querydsl.sql.SQLQueryFactory;
 import com.querydsl.sql.SQLTemplates;
 import com.querydsl.sql.spring.SpringConnectionProvider;
 import com.querydsl.sql.spring.SpringExceptionTranslator;
-import com.querydsl.sql.types.DateTimeType;
-import com.querydsl.sql.types.LocalDateType;
+import com.querydsl.sql.types.JSR310LocalDateTimeType;
+import com.querydsl.sql.types.JSR310LocalDateType;
 
 @Configuration
 public class QueryDslSqlConfiguration {
@@ -36,8 +36,8 @@ public class QueryDslSqlConfiguration {
 		SQLTemplates templates = H2Templates.builder().build();
 		com.querydsl.sql.Configuration configuration = new com.querydsl.sql.Configuration(templates);
 		configuration.setExceptionTranslator(new SpringExceptionTranslator());
-		configuration.register(new DateTimeType());
-		configuration.register(new LocalDateType());
+		configuration.register(new JSR310LocalDateType());
+		configuration.register(new JSR310LocalDateTimeType());
 		return configuration;
 	}
 
