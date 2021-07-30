@@ -10,6 +10,7 @@ import static io.qrest.rest.operator.OperatorSymbols.LIKE;
 import static io.qrest.rest.operator.OperatorSymbols.LIKE_CASE_INSENSITIVE;
 import static io.qrest.rest.operator.OperatorSymbols.NOT_EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.NOT_IN;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -17,6 +18,7 @@ import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -174,7 +176,7 @@ public class BooleanExpressionFactoryTest {
 
 	private static Stream<Arguments> numberExpressions_withIntegers_source() {
 		return Stream.of(Arguments.of(GREATER_THAN, (Function<Integer, NumberPath<?>>) (p) -> {
-			NumberPath<?> mock = numberPath(true);
+			NumberPath<?> mock = numberPath(Integer.class);
 			given(mock.gt(p)).willReturn(expectedExpression);
 			return mock;
 		}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
@@ -182,7 +184,7 @@ public class BooleanExpressionFactoryTest {
 			then(m).should().gt(p);
 		}),
 				Arguments.of(GREATER_THAN_OR_EQUAL, (Function<Integer, NumberPath<?>>) (p) -> {
-					NumberPath<?> mock = numberPath(true);
+					NumberPath<?> mock = numberPath(Integer.class);
 					given(mock.goe(p)).willReturn(expectedExpression);
 					return mock;
 				}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
@@ -190,7 +192,7 @@ public class BooleanExpressionFactoryTest {
 					then(m).should().goe(p);
 				}),
 				Arguments.of(LESS_THAN, (Function<Integer, NumberPath<?>>) (p) -> {
-					NumberPath<?> mock = numberPath(true);
+					NumberPath<?> mock = numberPath(Integer.class);
 					given(mock.lt(p)).willReturn(expectedExpression);
 					return mock;
 				}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
@@ -198,13 +200,51 @@ public class BooleanExpressionFactoryTest {
 					then(m).should().lt(p);
 				}),
 				Arguments.of(LESS_THAN_OR_EQUAL, (Function<Integer, NumberPath<?>>) (p) -> {
-					NumberPath<?> mock = numberPath(true);
+					NumberPath<?> mock = numberPath(Integer.class);
 					given(mock.loe(p)).willReturn(expectedExpression);
 					return mock;
 				}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
 					then(m).should(times(2)).getType();
 					then(m).should().loe(p);
 				}));
+	}
+
+	@ParameterizedTest
+	@MethodSource("collectionExpressions_withBigDecimals_source")
+	public void collectionExpressions_withBigDecimals(String operatorSymbol,
+			Function<List<BigDecimal>, NumberPath<BigDecimal>> mockFunction,
+			BiConsumer<NumberPath<BigDecimal>, List<BigDecimal>> verifyFunction) {
+
+		// given
+		List<BigDecimal> values = List.of(new BigDecimal("3.5"), new BigDecimal("33.23"), new BigDecimal("320"));
+		NumberPath<BigDecimal> path = mockFunction.apply(values);
+		ConversionService conversionService = mock(ConversionService.class);
+		for (BigDecimal value : values) {
+			given(conversionService.convert(value.toString(), BigDecimal.class)).willReturn(value);
+		}
+		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
+
+		// when
+		BooleanExpression createdExpression = booleanExpressionFactory.create(path, operatorSymbol, values.stream().map(v -> v.toString()).collect(toList()));
+
+		// then
+		assertThat(createdExpression).isNotNull();
+		verifyFunction.accept(path, values);
+		then(path).shouldHaveNoMoreInteractions();
+		for (BigDecimal value : values) {
+			then(conversionService).should().convert(value.toString(), BigDecimal.class);
+		}
+	}
+
+	private static Stream<Arguments> collectionExpressions_withBigDecimals_source() {
+		return Stream.of(Arguments.of(IN, (Function<List<BigDecimal>, NumberPath<?>>) (p) -> {
+			NumberPath<BigDecimal> mock = numberPath(BigDecimal.class);
+			given(mock.in(p)).willReturn(expectedExpression);
+			return mock;
+		}, (BiConsumer<NumberPath<BigDecimal>, List<BigDecimal>>) (m, p) -> {
+			then(m).should(times(2 * p.size() + 1)).getType();
+			then(m).should().in((p));
+		}));
 	}
 
 	private static StringPath stringPath(boolean withType) {
@@ -215,12 +255,12 @@ public class BooleanExpressionFactoryTest {
 		return stringPath;
 	}
 
-	private static NumberPath<?> numberPath(boolean withType) {
+	private static <T extends Number & Comparable<?>> NumberPath<T> numberPath(Class<T> type) {
 		NumberPath<?> numberPath = mock(NumberPath.class);
-		if (withType) {
-			willReturn(Integer.class).given(numberPath).getType();
+		if (type != null) {
+			willReturn(type).given(numberPath).getType();
 		}
-		return numberPath;
+		return (NumberPath<T>) numberPath;
 	}
 
 	private static BooleanPath booleanPath(boolean withType) {
