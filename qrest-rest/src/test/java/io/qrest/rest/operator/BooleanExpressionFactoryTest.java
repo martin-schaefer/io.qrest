@@ -2,7 +2,10 @@ package io.qrest.rest.operator;
 
 import static io.qrest.rest.operator.OperatorSymbols.EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.GREATER_THAN;
+import static io.qrest.rest.operator.OperatorSymbols.GREATER_THAN_OR_EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.IN;
+import static io.qrest.rest.operator.OperatorSymbols.LESS_THAN;
+import static io.qrest.rest.operator.OperatorSymbols.LESS_THAN_OR_EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.LIKE;
 import static io.qrest.rest.operator.OperatorSymbols.LIKE_CASE_INSENSITIVE;
 import static io.qrest.rest.operator.OperatorSymbols.NOT_EQUAL;
@@ -134,7 +137,31 @@ public class BooleanExpressionFactoryTest {
 		}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
 			then(m).should(times(2)).getType();
 			then(m).should().gt(p);
-		}));
+		}),
+				Arguments.of(GREATER_THAN_OR_EQUAL, (Function<Integer, NumberPath<?>>) (p) -> {
+					NumberPath<?> mock = numberPath(true);
+					given(mock.goe(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
+					then(m).should(times(2)).getType();
+					then(m).should().goe(p);
+				}),
+				Arguments.of(LESS_THAN, (Function<Integer, NumberPath<?>>) (p) -> {
+					NumberPath<?> mock = numberPath(true);
+					given(mock.lt(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
+					then(m).should(times(2)).getType();
+					then(m).should().lt(p);
+				}),
+				Arguments.of(LESS_THAN_OR_EQUAL, (Function<Integer, NumberPath<?>>) (p) -> {
+					NumberPath<?> mock = numberPath(true);
+					given(mock.loe(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<NumberPath<?>, Integer>) (m, p) -> {
+					then(m).should(times(2)).getType();
+					then(m).should().loe(p);
+				}));
 	}
 
 	private static StringPath stringPath(boolean withType) {
