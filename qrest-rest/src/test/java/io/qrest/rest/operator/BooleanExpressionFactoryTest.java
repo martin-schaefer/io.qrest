@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionService;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
 
@@ -106,6 +107,48 @@ public class BooleanExpressionFactoryTest {
 	}
 
 	@ParameterizedTest
+	@MethodSource("simpleExpressions_withBooleans_source")
+	public void simpleExpressions_withBooleans(String operatorSymbol,
+			Function<Boolean, BooleanPath> mockFunction,
+			BiConsumer<BooleanPath, Boolean> verifyFunction) {
+
+		// given
+		Boolean value = Boolean.TRUE;
+		ConversionService conversionService = mock(ConversionService.class);
+		given(conversionService.convert(value.toString(), Boolean.class)).willReturn(value);
+		BooleanPath path = mockFunction.apply(value);
+		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
+
+		// when
+		BooleanExpression createdExpression = booleanExpressionFactory.create(path, operatorSymbol,
+				List.of(value.toString()));
+
+		// then
+		assertThat(createdExpression).isNotNull();
+		verifyFunction.accept(path, value);
+		then(path).shouldHaveNoMoreInteractions();
+		then(conversionService).should().convert(value.toString(), Boolean.class);
+	}
+
+	private static Stream<Arguments> simpleExpressions_withBooleans_source() {
+		return Stream.of(Arguments.of(EQUAL, (Function<Boolean, BooleanPath>) (p) -> {
+			BooleanPath mock = booleanPath(true);
+			given(mock.eq(p)).willReturn(expectedExpression);
+			return mock;
+		}, (BiConsumer<BooleanPath, Boolean>) (m, p) -> {
+			then(m).should(times(2)).getType();
+			then(m).should().eq(p);
+		}), Arguments.of(NOT_EQUAL, (Function<Boolean, BooleanPath>) (p) -> {
+			BooleanPath mock = booleanPath(true);
+			given(mock.ne(p)).willReturn(expectedExpression);
+			return mock;
+		}, (BiConsumer<BooleanPath, Boolean>) (m, p) -> {
+			then(m).should(times(2)).getType();
+			then(m).should().ne(p);
+		}));
+	}
+
+	@ParameterizedTest
 	@MethodSource("numberExpressions_withIntegers_source")
 	public void numberExpressions_withIntegers(String operatorSymbol,
 			Function<Integer, NumberPath<?>> mockFunction,
@@ -178,6 +221,14 @@ public class BooleanExpressionFactoryTest {
 			willReturn(Integer.class).given(numberPath).getType();
 		}
 		return numberPath;
+	}
+
+	private static BooleanPath booleanPath(boolean withType) {
+		BooleanPath booleanPath = mock(BooleanPath.class);
+		if (withType) {
+			willReturn(Boolean.class).given(booleanPath).getType();
+		}
+		return booleanPath;
 	}
 
 }
