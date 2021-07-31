@@ -12,6 +12,7 @@ import static io.qrest.rest.operator.OperatorSymbols.NOT_EQUAL;
 import static io.qrest.rest.operator.OperatorSymbols.NOT_IN;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willReturn;
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +35,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionService;
 
+import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.NumberPath;
@@ -257,6 +260,40 @@ public class BooleanExpressionFactoryTest {
 				}));
 	}
 
+	@ParameterizedTest
+	@MethodSource("mixedExpressions_withInvalidOperators")
+	public void mixedExpressions_withInvalidOperators_shouldThrowQRestOperatorException(String operatorSymbol, Supplier<Path<?>> pathSupplier) {
+		ConversionService conversionService = mock(ConversionService.class);
+		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
+		assertThrows(QRestOperatorException.class, () -> booleanExpressionFactory.create(pathSupplier.get(), operatorSymbol, List.of("not_used")));
+	}
+
+	private static Stream<Arguments> mixedExpressions_withInvalidOperators() {
+		return Stream.of(Arguments.of(GREATER_THAN, (Supplier<Path<?>>) () -> {
+			return stringPath(false);
+		}),
+				Arguments.of(LESS_THAN, (Supplier<Path<?>>) () -> {
+					return stringPath(false);
+				}),
+				Arguments.of(GREATER_THAN_OR_EQUAL, (Supplier<Path<?>>) () -> {
+					return booleanPath(false);
+				}),
+				Arguments.of(LESS_THAN_OR_EQUAL, (Supplier<Path<?>>) () -> {
+					return booleanPath(false);
+				}),
+				Arguments.of(LIKE, (Supplier<Path<?>>) () -> {
+					return booleanPath(false);
+				}),
+				Arguments.of(LIKE, (Supplier<Path<?>>) () -> {
+					return numberPath(null);
+				}));
+	}
+
+	@Test
+	public void constructorWithNull_shouldThrowNullPointerException() {
+		Assertions.assertThrows(NullPointerException.class, () -> new BooleanExpressionFactory(null));
+	}
+
 	private static StringPath stringPath(boolean withType) {
 		StringPath stringPath = mock(StringPath.class);
 		if (withType) {
@@ -281,8 +318,4 @@ public class BooleanExpressionFactoryTest {
 		return booleanPath;
 	}
 
-	@Test
-	public void constructorWithNull_shouldThrowNullPointerException() {
-		Assertions.assertThrows(NullPointerException.class, () -> new BooleanExpressionFactory(null));
-	}
 }

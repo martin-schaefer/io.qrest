@@ -79,8 +79,8 @@ public class BooleanExpressionFactory {
 				return se.notIn(convert(args, path));
 			}
 		}
-		throw new IllegalArgumentException("A property of type " + path.getClass().getSimpleName()
-				+ " cannot be queried with operator " + operatorSymbol);
+		throw new QRestOperatorException("A path of type " + path.getClass().getName()
+				+ " cannot be used with operator " + operatorSymbol);
 	}
 
 	private Object convert(String source, Path<?> path) {
