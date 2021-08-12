@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.core.convert.ConversionService;
-
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -33,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class BooleanExpressionFactory {
 
 	@NonNull
-	private final ConversionService conversionService;
+	private final ArgumentConversionService argumentConversionService;
 
 	public BooleanExpression create(Path<?> path, String operatorSymbol, List<String> args) {
 		// one value is guaranteed
@@ -101,7 +99,7 @@ public class BooleanExpressionFactory {
 			// no conversion required
 			return source;
 		}
-		return conversionService.convert(source, path.getType());
+		return argumentConversionService.convert(source, path.getType());
 	}
 
 	private Collection<?> convert(Collection<String> sourceCollection, Path<?> path) {

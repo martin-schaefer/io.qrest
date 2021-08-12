@@ -34,7 +34,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -55,7 +54,7 @@ public class BooleanExpressionFactoryTest {
 			BiConsumer<StringPath, String> verifyFunction) {
 
 		// given
-		ConversionService conversionService = mock(ConversionService.class);
+		ArgumentConversionService conversionService = mock(ArgumentConversionService.class);
 		String value = "abc";
 		StringPath path = mockFunction.apply(value);
 		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
@@ -123,7 +122,7 @@ public class BooleanExpressionFactoryTest {
 
 		// given
 		Boolean value = Boolean.TRUE;
-		ConversionService conversionService = mock(ConversionService.class);
+		ArgumentConversionService conversionService = mock(ArgumentConversionService.class);
 		given(conversionService.convert(value.toString(), Boolean.class)).willReturn(value);
 		BooleanPath path = mockFunction.apply(value);
 		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
@@ -166,7 +165,7 @@ public class BooleanExpressionFactoryTest {
 		// given
 		Integer value = Integer.valueOf(5);
 		NumberPath<?> path = mockFunction.apply(value);
-		ConversionService conversionService = mock(ConversionService.class);
+		ArgumentConversionService conversionService = mock(ArgumentConversionService.class);
 		given(conversionService.convert(value.toString(), Integer.class)).willReturn(value);
 		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
 
@@ -225,7 +224,7 @@ public class BooleanExpressionFactoryTest {
 		// given
 		LocalDate value = LocalDate.of(2022, 9, 28);
 		DatePath<?> path = mockFunction.apply(value);
-		ConversionService conversionService = mock(ConversionService.class);
+		ArgumentConversionService conversionService = mock(ArgumentConversionService.class);
 		given(conversionService.convert(value.toString(), LocalDate.class)).willReturn(value);
 		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
 
@@ -284,7 +283,7 @@ public class BooleanExpressionFactoryTest {
 		// given
 		List<BigDecimal> values = List.of(new BigDecimal("3.5"), new BigDecimal("33.23"), new BigDecimal("320"));
 		NumberPath<BigDecimal> path = mockFunction.apply(values);
-		ConversionService conversionService = mock(ConversionService.class);
+		ArgumentConversionService conversionService = mock(ArgumentConversionService.class);
 		for (BigDecimal value : values) {
 			given(conversionService.convert(value.toString(), BigDecimal.class)).willReturn(value);
 		}
@@ -324,7 +323,7 @@ public class BooleanExpressionFactoryTest {
 	@ParameterizedTest
 	@MethodSource("mixedExpressions_withInvalidOperators")
 	public void mixedExpressions_withInvalidOperators_shouldThrowQRestOperatorException(String operatorSymbol, Supplier<Path<?>> pathSupplier) {
-		ConversionService conversionService = mock(ConversionService.class);
+		ArgumentConversionService conversionService = mock(ArgumentConversionService.class);
 		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
 		assertThrows(QRestOperatorException.class, () -> booleanExpressionFactory.create(pathSupplier.get(), operatorSymbol, List.of("not_used")));
 	}
