@@ -24,6 +24,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.SimpleExpression;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.core.types.dsl.TemporalExpression;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,18 @@ public class BooleanExpressionFactory {
 				return ne.lt((Number) convert(arg, path));
 			case LESS_THAN_OR_EQUAL:
 				return ne.loe((Number) convert(arg, path));
+			}
+		} else if (path instanceof TemporalExpression) {
+			TemporalExpression te = (TemporalExpression) path;
+			switch (operatorSymbol) {
+			case GREATER_THAN:
+				return te.gt((Comparable) convert(arg, path));
+			case GREATER_THAN_OR_EQUAL:
+				return te.goe((Comparable) convert(arg, path));
+			case LESS_THAN:
+				return te.lt((Comparable) convert(arg, path));
+			case LESS_THAN_OR_EQUAL:
+				return te.loe((Comparable) convert(arg, path));
 			}
 		}
 		if (path instanceof SimpleExpression<?>) {

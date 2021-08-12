@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -38,6 +39,7 @@ import org.springframework.core.convert.ConversionService;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
 
@@ -215,6 +217,65 @@ public class BooleanExpressionFactoryTest {
 	}
 
 	@ParameterizedTest
+	@MethodSource("temporalExpressions_withLocalDates_source")
+	public void temporalExpressions_withLocalDates(String operatorSymbol,
+			Function<LocalDate, DatePath<?>> mockFunction,
+			BiConsumer<DatePath<?>, LocalDate> verifyFunction) {
+
+		// given
+		LocalDate value = LocalDate.of(2022, 9, 28);
+		DatePath<?> path = mockFunction.apply(value);
+		ConversionService conversionService = mock(ConversionService.class);
+		given(conversionService.convert(value.toString(), LocalDate.class)).willReturn(value);
+		BooleanExpressionFactory booleanExpressionFactory = new BooleanExpressionFactory(conversionService);
+
+		// when
+		BooleanExpression createdExpression = booleanExpressionFactory.create(path, operatorSymbol,
+				List.of(value.toString()));
+
+		// then
+		assertThat(createdExpression).isNotNull();
+		verifyFunction.accept(path, value);
+		then(path).shouldHaveNoMoreInteractions();
+		then(conversionService).should().convert(value.toString(), LocalDate.class);
+	}
+
+	private static Stream<Arguments> temporalExpressions_withLocalDates_source() {
+		return Stream.of(Arguments.of(GREATER_THAN, (Function<LocalDate, DatePath<?>>) (p) -> {
+			DatePath<LocalDate> mock = datePath(LocalDate.class);
+			given(mock.gt(p)).willReturn(expectedExpression);
+			return mock;
+		}, (BiConsumer<DatePath<LocalDate>, LocalDate>) (m, p) -> {
+			then(m).should(times(2)).getType();
+			then(m).should().gt(p);
+		}),
+				Arguments.of(GREATER_THAN_OR_EQUAL, (Function<LocalDate, DatePath<?>>) (p) -> {
+					DatePath<LocalDate> mock = datePath(LocalDate.class);
+					given(mock.goe(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<DatePath<LocalDate>, LocalDate>) (m, p) -> {
+					then(m).should(times(2)).getType();
+					then(m).should().goe(p);
+				}),
+				Arguments.of(LESS_THAN, (Function<LocalDate, DatePath<?>>) (p) -> {
+					DatePath<LocalDate> mock = datePath(LocalDate.class);
+					given(mock.lt(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<DatePath<LocalDate>, LocalDate>) (m, p) -> {
+					then(m).should(times(2)).getType();
+					then(m).should().lt(p);
+				}),
+				Arguments.of(LESS_THAN_OR_EQUAL, (Function<LocalDate, DatePath<?>>) (p) -> {
+					DatePath<LocalDate> mock = datePath(LocalDate.class);
+					given(mock.loe(p)).willReturn(expectedExpression);
+					return mock;
+				}, (BiConsumer<DatePath<LocalDate>, LocalDate>) (m, p) -> {
+					then(m).should(times(2)).getType();
+					then(m).should().loe(p);
+				}));
+	}
+
+	@ParameterizedTest
 	@MethodSource("collectionExpressions_withBigDecimals_source")
 	public void collectionExpressions_withBigDecimals(String operatorSymbol,
 			Function<List<BigDecimal>, NumberPath<BigDecimal>> mockFunction,
@@ -308,6 +369,14 @@ public class BooleanExpressionFactoryTest {
 			willReturn(type).given(numberPath).getType();
 		}
 		return (NumberPath<T>) numberPath;
+	}
+
+	private static <T extends Comparable<?>> DatePath<T> datePath(Class<T> type) {
+		DatePath<?> datePath = mock(DatePath.class);
+		if (type != null) {
+			willReturn(type).given(datePath).getType();
+		}
+		return (DatePath<T>) datePath;
 	}
 
 	private static BooleanPath booleanPath(boolean withType) {
