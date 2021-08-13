@@ -38,5 +38,5 @@ insert into Contract(id,number,premium,inceptionDate,signingTime,insuredPerson) 
 insert into Contract(id,number,premium,inceptionDate,signingTime,insuredPerson) values('contract2', 'T34569', 34.05, parsedatetime('22-12-2020', 'dd-MM-yyyy'), parsedatetime('22-11-2020 11:55:00', 'dd-MM-yyyy HH:mm:ss'),'person2');
 insert into Contract(id,number,premium,inceptionDate,signingTime,insuredPerson) values('contract3', 'T44570', 230.05, parsedatetime('23-04-2021', 'dd-MM-yyyy'), parsedatetime('05-04-2021 07:05:30', 'dd-MM-yyyy HH:mm:ss'),'person3');
 insert into Contract(id,number,premium,inceptionDate,signingTime,insuredPerson) values('contract4', 'T44571', 2095.00, parsedatetime('01-02-2021', 'dd-MM-yyyy'), parsedatetime('01-02-2021 16:30:19', 'dd-MM-yyyy HH:mm:ss'),'person1');
-insert into Contract(id,number,premium,inceptionDate,signingTime,insuredPerson) values('contract6', 'T44572', 367.50, parsedatetime('10-10-2019', 'dd-MM-yyyy'), parsedatetime('02-10-2019 09:58:00', 'dd-MM-yyyy HH:mm:ss'),'person3');
+insert into Contract(id,number,premium,inceptionDate,signingTime,insuredPerson) values('contract5', 'T44572', 367.50, parsedatetime('10-10-2019', 'dd-MM-yyyy'), parsedatetime('02-10-2019 09:58:00', 'dd-MM-yyyy HH:mm:ss'),'person3');
 	
