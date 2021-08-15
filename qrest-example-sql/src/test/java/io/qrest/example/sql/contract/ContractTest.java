@@ -92,7 +92,7 @@ public class ContractTest {
 				.accept(APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(6)))
-				.andExpect(jsonPath("$[0]", allOf(aMapWithSize(8), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"),
+				.andExpect(jsonPath("$[5]", allOf(aMapWithSize(8), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"),
 						hasKey("signingtime"), hasKey("comments"), hasKey("insuredperson"), hasKey("inceptiondate"))));
 	}
 }
