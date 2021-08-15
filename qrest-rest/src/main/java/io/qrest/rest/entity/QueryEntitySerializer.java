@@ -31,7 +31,11 @@ public class QueryEntitySerializer extends JsonSerializer<QueryEntity> {
 		for (Pair<String, Object> property : queryItem.getProperties()) {
 			gen.writeFieldName(property.getKey());
 			Object value = property.getValue();
-			provider.findValueSerializer(value.getClass()).serialize(value, gen, provider);
+			if (value != null) {
+				provider.findValueSerializer(value.getClass()).serialize(value, gen, provider);
+			} else {
+				provider.getDefaultNullValueSerializer().serialize(value, gen, provider);
+			}
 		}
 		gen.writeEndObject();
 	}

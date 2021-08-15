@@ -43,7 +43,7 @@ public class ContractRepository {
 	private final SQLQueryFactory queryFactory;
 
 	public List<QueryEntity> find(QueryDslParam param) {
-		List<Path<?>> selectedPaths = param.getSelect().get();
+		List<Path<?>> selectedPaths = param.getSelect().orElse(contract.getColumns());
 		SQLQuery<Tuple> sqlQuery = queryFactory.select(selectedPaths.toArray(new Path[0])).from(contract);
 		param.getWhere().ifPresent(p -> sqlQuery.where(p));
 		param.getOrderBy().ifPresent(o -> sqlQuery.orderBy(o.toArray(new OrderSpecifier[0])));

@@ -1,6 +1,9 @@
 package io.qrest.example.sql.contract;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.stream.Stream;
 
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -57,5 +61,26 @@ public class ContractTest {
 				Arguments.of("number=lki=T44* and number!=T44570 and number!=T44571", "contract5"),
 				Arguments.of("signingtime=gt=2020-11-22T11:54:30 and signingtime=lt=2020-11-22T11:55:01", "contract2"),
 				Arguments.of("comments==null", "contract5"));
+	}
+
+	@ParameterizedTest(name = "Select contract fields [{0}]")
+	@MethodSource("selectClauseSource")
+	public void getContract_withSelectClause(String select, Matcher<?> matcher) throws Exception {
+		mvc.perform(get("/contracts?select=" + select + "&where=id==contract0")
+				.contentType(APPLICATION_JSON)
+				.accept(APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(1)))
+				.andExpect(jsonPath("$[0]", matcher));
+	}
+
+	private static Stream<Arguments> selectClauseSource() {
+		return Stream.of(
+				Arguments.of("id", allOf(aMapWithSize(2), hasKey("_type"), hasKey("id"))),
+				Arguments.of("signingtime,comments,insuredperson,inceptiondate",
+						allOf(aMapWithSize(5), hasKey("_type"), hasKey("signingtime"), hasKey("comments"), hasKey("insuredperson"), hasKey("inceptiondate"))),
+				Arguments.of("id,number,premium", allOf(aMapWithSize(4), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"))),
+				Arguments.of("", allOf(aMapWithSize(8), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"), hasKey("signingtime"), hasKey("comments"), hasKey("insuredperson"),
+						hasKey("inceptiondate"))));
 	}
 }
