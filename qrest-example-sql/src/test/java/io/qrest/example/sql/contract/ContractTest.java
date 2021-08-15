@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -82,5 +83,16 @@ public class ContractTest {
 				Arguments.of("id,number,premium", allOf(aMapWithSize(4), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"))),
 				Arguments.of("", allOf(aMapWithSize(8), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"), hasKey("signingtime"), hasKey("comments"), hasKey("insuredperson"),
 						hasKey("inceptiondate"))));
+	}
+
+	@Test
+	public void selectAllNoClauses() throws Exception {
+		mvc.perform(get("/contracts")
+				.contentType(APPLICATION_JSON)
+				.accept(APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$", hasSize(6)))
+				.andExpect(jsonPath("$[0]", allOf(aMapWithSize(8), hasKey("_type"), hasKey("id"), hasKey("number"), hasKey("premium"),
+						hasKey("signingtime"), hasKey("comments"), hasKey("insuredperson"), hasKey("inceptiondate"))));
 	}
 }
