@@ -4,9 +4,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.qrest.rest.operator.ArgumentConversionService;
+import io.qrest.rest.conversion.ArgumentConversionService;
+import io.qrest.rest.conversion.DefaultArgumentConversionService;
 import io.qrest.rest.operator.ComparisonOperatorProvider;
-import io.qrest.rest.operator.DefaultArgumentConversionService;
 import io.qrest.rest.operator.QRestComparisonOperatorProvider;
 
 @Configuration

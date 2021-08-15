@@ -24,6 +24,7 @@ import com.querydsl.core.types.dsl.SimpleExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.core.types.dsl.TemporalExpression;
 
+import io.qrest.rest.conversion.ArgumentConversionService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 

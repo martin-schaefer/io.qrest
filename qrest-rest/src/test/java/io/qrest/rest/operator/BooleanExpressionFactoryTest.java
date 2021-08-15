@@ -42,6 +42,8 @@ import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
 
+import io.qrest.rest.conversion.ArgumentConversionService;
+
 @ExtendWith(MockitoExtension.class)
 public class BooleanExpressionFactoryTest {
 

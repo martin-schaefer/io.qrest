@@ -1,4 +1,4 @@
-package io.qrest.rest.operator;
+package io.qrest.rest.conversion;
 
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.format.support.DefaultFormattingConversionService;
